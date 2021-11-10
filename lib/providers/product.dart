@@ -1,7 +1,10 @@
 // ignore_for_file: constant_identifier_names
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:http/http.dart' as http;
 
 class Product with ChangeNotifier {
   static const TITLE = 'title';
@@ -25,9 +28,17 @@ class Product with ChangeNotifier {
       required this.imageUrl,
       this.isFavorite = false});
 
-  void toggleFavorite() {
-    isFavorite = !isFavorite;
-    notifyListeners();
+  Future<void> toggleFavorite() async {
+    final url = Uri.parse(
+        'https://petdora-578b6-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json');
+    try {
+      isFavorite = !isFavorite;
+      await http.patch(url, body: json.encode(toJson()));
+      notifyListeners();
+    } catch (error) {
+      isFavorite = !isFavorite;
+      rethrow;
+    }
   }
 
   static Product fromJson(Map<String, dynamic> json) => Product(

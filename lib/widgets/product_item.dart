@@ -4,8 +4,31 @@ import 'package:my_shop/providers/product.dart';
 import 'package:my_shop/screens/product_detail_screen.dart';
 import 'package:provider/provider.dart';
 
-class ProductItem extends StatelessWidget {
+class ProductItem extends StatefulWidget {
   const ProductItem({Key? key}) : super(key: key);
+
+  @override
+  State<ProductItem> createState() => _ProductItemState();
+}
+
+class _ProductItemState extends State<ProductItem> {
+  bool _togglingFavorite = false;
+
+  Future<void> _toggleFavorite(BuildContext context, Product product) async {
+    setState(() {
+      _togglingFavorite = true;
+    });
+    try {
+      await product.toggleFavorite();
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error adding to favorite')));
+    } finally {
+      setState(() {
+        _togglingFavorite = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,17 +46,23 @@ class ProductItem extends StatelessWidget {
             child: Image.network(product.imageUrl)),
         footer: GridTileBar(
           backgroundColor: Colors.black87,
-          leading: IconButton(
-            icon: Consumer<Product>(builder: (ctx, product, child) {
-              return Icon(
-                product.isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: Theme.of(context).colorScheme.secondary,
-              );
-            }),
-            onPressed: () {
-              product.toggleFavorite();
-            },
-          ),
+          leading: _togglingFavorite
+              ? const Center(
+                  child: FittedBox(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              : IconButton(
+                  icon: Consumer<Product>(builder: (ctx, product, child) {
+                    return Icon(
+                      product.isFavorite
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: Theme.of(context).colorScheme.secondary,
+                    );
+                  }),
+                  onPressed: () => _toggleFavorite(context, product),
+                ),
           title: Text(
             product.title,
             textAlign: TextAlign.center,
