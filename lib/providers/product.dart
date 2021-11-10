@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 class Product with ChangeNotifier {
   static const TITLE = 'title';
@@ -28,4 +29,21 @@ class Product with ChangeNotifier {
     isFavorite = !isFavorite;
     notifyListeners();
   }
+
+  static Product fromJson(Map<String, dynamic> json) => Product(
+        id: json['id'] as String?,
+        title: json['title'] as String,
+        description: json['description'] as String,
+        price: double.parse(json['price']),
+        imageUrl: json['imageUrl'] as String,
+        isFavorite: json['isFavorite'].toString().toLowerCase() == 'true',
+      );
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'description': description,
+        'price': price.toString(),
+        'imageUrl': imageUrl,
+        'isFavorite': isFavorite.toString(),
+      };
 }

@@ -9,6 +9,10 @@ class UserProductsScreen extends StatelessWidget {
   static const routeName = '/user-products';
   const UserProductsScreen({Key? key}) : super(key: key);
 
+  Future<void> getDataFromDB(BuildContext context) async {
+    await Provider.of<Products>(context, listen: false).fetchAndSetProducts();
+  }
+
   @override
   Widget build(BuildContext context) {
     final productsData = Provider.of<Products>(context);
@@ -24,16 +28,42 @@ class UserProductsScreen extends StatelessWidget {
         ],
       ),
       drawer: const AppDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: ListView.builder(
-          itemBuilder: (_, index) => Column(
-            children: [
-              UserProductItem(product: productsData.items[index]),
-              const Divider()
-            ],
-          ),
-          itemCount: productsData.items.length,
+      body: RefreshIndicator(
+        onRefresh: () => getDataFromDB(context),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: productsData.items.isEmpty
+              ? Center(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "NO PRODUCTS FOUND",
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context)
+                                  .pushNamed(EditProductScreen.routeName);
+                            },
+                            child: const Text('Add Product'))
+                      ]),
+                )
+              : ListView.builder(
+                  itemBuilder: (_, index) => Column(
+                    children: [
+                      UserProductItem(product: productsData.items[index]),
+                      const Divider()
+                    ],
+                  ),
+                  itemCount: productsData.items.length,
+                ),
         ),
       ),
     );
