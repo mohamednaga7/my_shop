@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:my_shop/helpers/custom_route.dart';
 import 'package:my_shop/providers/auth.dart';
 import 'package:my_shop/providers/cart.dart';
 import 'package:my_shop/providers/orders.dart';
@@ -25,8 +26,13 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    ThemeData theme =
-        ThemeData(primarySwatch: Colors.purple, fontFamily: 'Lato');
+    ThemeData theme = ThemeData(
+        primarySwatch: Colors.purple,
+        fontFamily: 'Lato',
+        pageTransitionsTheme: PageTransitionsTheme(builders: {
+          TargetPlatform.android: CustomPageTransitionBuilder(),
+          TargetPlatform.iOS: CustomPageTransitionBuilder()
+        }));
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (ctx) => Auth()),
