@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 enum FilterOptions { Favorites, All }
 
 class ProductsOverviewScreen extends StatefulWidget {
+  static const routeName = '/products-overview';
   const ProductsOverviewScreen({Key? key}) : super(key: key);
 
   @override
@@ -24,7 +25,12 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
     setState(() {
       _isLoading = true;
     });
-    await Provider.of<Products>(context, listen: false).fetchAndSetProducts();
+    try {
+      await Provider.of<Products>(context, listen: false).fetchAndSetProducts();
+    } catch (error) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.toString())));
+    }
     setState(() {
       _isLoading = false;
     });

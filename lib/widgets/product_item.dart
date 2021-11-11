@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_shop/providers/auth.dart';
 import 'package:my_shop/providers/cart.dart';
 import 'package:my_shop/providers/product.dart';
 import 'package:my_shop/screens/product_detail_screen.dart';
@@ -14,12 +15,13 @@ class ProductItem extends StatefulWidget {
 class _ProductItemState extends State<ProductItem> {
   bool _togglingFavorite = false;
 
-  Future<void> _toggleFavorite(BuildContext context, Product product) async {
+  Future<void> _toggleFavorite(BuildContext context, Product product,
+      String authToken, String userId) async {
     setState(() {
       _togglingFavorite = true;
     });
     try {
-      await product.toggleFavorite();
+      await product.toggleFavorite(authToken, userId);
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error adding to favorite')));
@@ -32,6 +34,7 @@ class _ProductItemState extends State<ProductItem> {
 
   @override
   Widget build(BuildContext context) {
+    final authData = Provider.of<Auth>(context);
     final product = Provider.of<Product>(context, listen: false);
     final cart = Provider.of<Cart>(context, listen: false);
     return ClipRRect(
@@ -61,7 +64,8 @@ class _ProductItemState extends State<ProductItem> {
                       color: Theme.of(context).colorScheme.secondary,
                     );
                   }),
-                  onPressed: () => _toggleFavorite(context, product),
+                  onPressed: () => _toggleFavorite(
+                      context, product, authData.token!, authData.userId!),
                 ),
           title: Text(
             product.title,

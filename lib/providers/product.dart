@@ -28,16 +28,29 @@ class Product with ChangeNotifier {
       required this.imageUrl,
       this.isFavorite = false});
 
-  Future<void> toggleFavorite() async {
+  void _setFavValue(bool newValue) {
+    isFavorite = newValue;
+    notifyListeners();
+  }
+
+  Future<void> toggleFavorite(String token, String userId) async {
+    final oldStatus = isFavorite;
+    isFavorite = !isFavorite;
+    notifyListeners();
     final url = Uri.parse(
-        'https://petdora-578b6-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json');
+        'https://petdora-578b6-default-rtdb.asia-southeast1.firebasedatabase.app/userFavorites/$userId/$id.json?auth=$token');
     try {
-      isFavorite = !isFavorite;
-      await http.patch(url, body: json.encode(toJson()));
-      notifyListeners();
+      final response = await http.put(
+        url,
+        body: json.encode(
+          isFavorite,
+        ),
+      );
+      if (response.statusCode >= 400) {
+        _setFavValue(oldStatus);
+      }
     } catch (error) {
-      isFavorite = !isFavorite;
-      rethrow;
+      _setFavValue(oldStatus);
     }
   }
 
@@ -54,7 +67,6 @@ class Product with ChangeNotifier {
         'title': title,
         'description': description,
         'price': price.toString(),
-        'imageUrl': imageUrl,
-        'isFavorite': isFavorite.toString(),
+        'imageUrl': imageUrl
       };
 }

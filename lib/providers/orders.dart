@@ -20,13 +20,18 @@ class OrderItem {
 class Orders with ChangeNotifier {
   List<OrderItem> _orders = [];
 
+  final String? token;
+  final String? userId;
+
+  Orders(this.token, this.userId, this._orders);
+
   List<OrderItem> get orders {
     return [..._orders];
   }
 
   Future<void> fetchAndSetOrders() async {
     final url = Uri.parse(
-        'https://petdora-578b6-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json');
+        'https://petdora-578b6-default-rtdb.asia-southeast1.firebasedatabase.app/orders/$userId.json?auth=$token');
     try {
       final response = await http.get(url);
       if (response.body == 'null') {
@@ -58,7 +63,7 @@ class Orders with ChangeNotifier {
 
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
     final url = Uri.parse(
-        'https://petdora-578b6-default-rtdb.asia-southeast1.firebasedatabase.app/orders.json');
+        'https://petdora-578b6-default-rtdb.asia-southeast1.firebasedatabase.app/orders/$userId.json?auth=$token');
     try {
       final timestamp = DateTime.now();
       final response = await http.post(url,

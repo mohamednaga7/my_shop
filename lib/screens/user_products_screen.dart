@@ -10,12 +10,12 @@ class UserProductsScreen extends StatelessWidget {
   const UserProductsScreen({Key? key}) : super(key: key);
 
   Future<void> getDataFromDB(BuildContext context) async {
-    await Provider.of<Products>(context, listen: false).fetchAndSetProducts();
+    await Provider.of<Products>(context, listen: false)
+        .fetchAndSetProducts(filterByUser: true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final productsData = Provider.of<Products>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Products'),
@@ -28,43 +28,54 @@ class UserProductsScreen extends StatelessWidget {
         ],
       ),
       drawer: const AppDrawer(),
-      body: RefreshIndicator(
-        onRefresh: () => getDataFromDB(context),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: productsData.items.isEmpty
-              ? Center(
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "NO PRODUCTS FOUND",
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        ElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pushNamed(EditProductScreen.routeName);
-                            },
-                            child: const Text('Add Product'))
-                      ]),
-                )
-              : ListView.builder(
-                  itemBuilder: (_, index) => Column(
-                    children: [
-                      UserProductItem(product: productsData.items[index]),
-                      const Divider()
-                    ],
-                  ),
-                  itemCount: productsData.items.length,
-                ),
-        ),
+      body: FutureBuilder(
+        future: getDataFromDB(context),
+        builder: (ctx, snapshot) => snapshot.connectionState ==
+                ConnectionState.waiting
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : RefreshIndicator(
+                onRefresh: () => getDataFromDB(context),
+                child: Consumer<Products>(builder: (ctx, productsData, child) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: productsData.items.isEmpty
+                        ? Center(
+                            child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    "NO PRODUCTS FOUND",
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey),
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pushNamed(
+                                            EditProductScreen.routeName);
+                                      },
+                                      child: const Text('Add Product'))
+                                ]),
+                          )
+                        : ListView.builder(
+                            itemBuilder: (_, index) => Column(
+                              children: [
+                                UserProductItem(
+                                    product: productsData.items[index]),
+                                const Divider()
+                              ],
+                            ),
+                            itemCount: productsData.items.length,
+                          ),
+                  );
+                }),
+              ),
       ),
     );
   }
